@@ -32,7 +32,7 @@ erDiagram
     money money
     date startDate
     date endDate
-    status bool "True means done<br />(current date > endDate)"
+    status bool "True means done (current date > endDate)"
   }
 
   TRANSACTION {

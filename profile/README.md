@@ -19,19 +19,19 @@ erDiagram
     string userName
     string pin "Hashed"
     string address "Nullable"
-    string email "needed for OTP"
-    string phoneNumber "needed for OTP"
+    string email "For OTP"
+    string phoneNumber "For OTP"
     bool isActive
     money balance "Default 0, constrain >= 0"
   }
 
   METHOD {
-    int id PK "Auto inc, from 1"
+    int id PK "Auto inc"
     string name
   }
 
   RATE {
-    int id PK "Auto inc, from 1"
+    int id PK "Auto inc"
     int days
     decimal percentage
   }
@@ -41,25 +41,27 @@ erDiagram
     uuid userId FK
     int methodId FK
     int rateId FK
-    money money "constrain > 0"
+    money money "Constrain > 0"
     date startDate
     date endDate
-    bool status "True means done (current date > endDate) // or try calculating status by curDate and endDate maybe?"
+    %% or try calculating status by curDate and endDate maybe?
+    bool status "True means done (current date > endDate)"
   }
 
   TRANSACTION {
-    int id PK "Auto inc, from 1"
+    int id PK "Auto inc"
     uuid userId FK
-    money amount 
+    money amount
     enum type "('deposit' || 'withdraw' || 'interest_payment')"
-    timestamp createdAt "default now"
+    timestamp createdAt "Default now"
   }
 
   NOTIFICATION {
-    int id PK "Auto inc, from 1"
+    int id PK "Auto inc"
     uuid userId FK
     string title
-    string content 
+    string content
+    timestamp createdAt "Default now"
   }
 
   RATE_HISTORY {
@@ -76,7 +78,6 @@ erDiagram
   USER |o--|| NOTIFICATION : have
   RATE ||--o| RATE_HISTORY : have
 ```
-
 
 ### Architect
 

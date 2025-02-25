@@ -71,12 +71,12 @@ erDiagram
     decimal percentage
   }
 
-  USER |o--|| TICKET : have
-  TICKET ||--|| METHOD : have
-  TICKET ||--|| RATE : have
-  USER |o--|| TRANSACTION : have
-  USER |o--|| NOTIFICATION : have
-  RATE ||--o| RATE_HISTORY : have
+  USER }o--|| TICKET : has
+  USER }o--|| TRANSACTION : has
+  USER }o--|| NOTIFICATION : has
+  TICKET ||--}o METHOD : has
+  TICKET ||--}o RATE : has
+  RATE ||--o| RATE_HISTORY : has
 ```
 
 ### Architect

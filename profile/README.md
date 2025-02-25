@@ -75,23 +75,29 @@ architecture-beta
   service api_server(server)[API] in own_server
   service admin_web_server(server)[Admin Web] in own_server
 
+  group firebase[Firebase]
+  service fcm(server)[FCM] in firebase
+
   group ai_server[AI Server]
   service api_ai(server)[API] in ai_server
+
+  junction junction_bot_left
 
   service mobile[Mobile]
   service admin[Admin]
 
-  junction server_api_supabase in supabase
-
-  api_server:T -- B:api_ai{group}
-  api_server:L -- R:server_api_supabase
-  server_api_supabase:T -- B:database
-  server_api_supabase:B -- T:authentication_server
+  api_server:L -- R:authentication_server{group}
+  authentication_server:L -- R:database
 
   admin_web_server:L -- R:api_server
+
+  fcm{group}:R -- L:junction_bot_left
+
+  api_ai{group}:B -- T:api_server
 
   admin:T -- B:admin_web_server
 
   mobile:T -- B:api_server
-  mobile:L -- R:authentication_server
+  mobile:L -- R:junction_bot_left
+  junction_bot_left:T -- B:authentication_server{group}
 ```

@@ -13,25 +13,25 @@
 ### DB
 
 ```mermaid
----
-title: Database
----
 erDiagram
   USER {
     uuid id PK
     string userName
     string pin "Hashed"
     string address "Nullable"
+    string email "needed for OTP"
+    string phoneNumber "needed for OTP"
+    bool isActive
     money balance "Default 0, constrain >= 0"
   }
 
   METHOD {
-    int id PK "Auto inc, from 0"
+    int id PK "Auto inc, from 1"
     string name
   }
 
   RATE {
-    int id PK "Auto inc, from 0"
+    int id PK "Auto inc, from 1"
     int days
     decimal percentage
   }
@@ -41,27 +41,42 @@ erDiagram
     uuid userId FK
     int methodId FK
     int rateId FK
-    money money
+    money money "constrain > 0"
     date startDate
     date endDate
-    status bool "True means done (current date > endDate)"
+    bool status "True means done (current date > endDate) // or try calculating status by curDate and endDate maybe?"
   }
 
   TRANSACTION {
-    int id PK "Auto inc, from 0"
+    int id PK "Auto inc, from 1"
     uuid userId FK
-    money amount "Negative means out"
+    money amount 
+    enum type "('deposit' || 'withdraw' || 'interest_payment')"
+    timestamp createdAt "default now"
   }
 
   NOTIFICATION {
+    int id PK "Auto inc, from 1"
+    uuid userId FK
+    string title
+    string content 
+  }
 
+  RATE_HISTORY {
+    int id PK
+    int rateId FK
+    date effectiveDate
+    decimal percentage
   }
 
   USER |o--|| TICKET : have
   TICKET ||--|| METHOD : have
   TICKET ||--|| RATE : have
   USER |o--|| TRANSACTION : have
+  USER |o--|| NOTIFICATION : have
+  RATE ||--o| RATE_HISTORY : have
 ```
+
 
 ### Architect
 

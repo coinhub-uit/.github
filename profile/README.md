@@ -17,10 +17,12 @@ erDiagram
   USER {
     uuid id PK
     string userName
+    string email "For OTP"
+    string masterPassword "Hashed"
     string pin "Hashed"
     string address "Nullable"
-    string email "For OTP"
-    string phoneNumber "For OTP"
+    string(10) phoneNumber "Optional, for contact or sth"
+    %% For what??
     bool isActive
     money balance "Default 0, constrain >= 0"
   }
@@ -33,7 +35,6 @@ erDiagram
   RATE {
     int id PK "Auto inc"
     int days
-    decimal percentage
   }
 
   TICKET {
@@ -46,6 +47,12 @@ erDiagram
     date endDate
     %% or try calculating status by curDate and endDate maybe?
     bool status "True means done (current date > endDate)"
+  }
+
+  TICKET_RATE {
+    int ticketId PK,FK
+    int rateId PK,FK
+    decimal percentage
   }
 
   TRANSACTION {
@@ -64,19 +71,12 @@ erDiagram
     timestamp createdAt "Default now"
   }
 
-  RATE_HISTORY {
-    int id PK
-    int rateId FK
-    date effectiveDate
-    decimal percentage
-  }
-
   USER }o--|| TICKET : has
   USER }o--|| TRANSACTION : has
   USER }o--|| NOTIFICATION : has
   TICKET ||--}o METHOD : has
-  TICKET ||--}o RATE : has
-  RATE ||--o| RATE_HISTORY : has
+  TICKET ||--|| TICKET_RATE : has
+  TICKET_RATE ||--}o RATE : has
 ```
 
 ### Architect

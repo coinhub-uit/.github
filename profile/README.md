@@ -14,69 +14,70 @@
 
 ```mermaid
 erDiagram
-  USER {
+  user {
     uuid id PK
     string userName
     string email "For OTP"
     string masterPassword "Hashed"
     string pin "Hashed"
-    string address "Nullable"
-    string(10) phoneNumber "Optional, for contact or sth"
+    bytea avatar "Optional, fallback oauth image"
+    string address "Optional"
+    string(10) phoneNumber "Optional (for contact)"
     %% For what??
-    bool isActive
-    money balance "Default 0, constrain >= 0"
+    %% bool isActive
+    money balance "Default 0, constraint >= 0"
   }
 
-  METHOD {
+  method {
     int id PK "Auto inc"
-    string name
+    string description
   }
 
-  RATE {
+  %% name??
+  rate {
     int id PK "Auto inc"
     int days
   }
 
-  TICKET {
+  ticket {
     uuid id PK
     uuid userId FK
     int methodId FK
     int rateId FK
-    money money "Constrain > 0"
+    money initMoney "> 0"
+    timestamp issueDate
+    bool isOpen
+  }
+
+  %% need change the name
+  ticket_detail {
+    uuid ticketId FK
+    decimal percentage
     date startDate
     date endDate
-    %% or try calculating status by curDate and endDate maybe?
-    bool status "True means done (current date > endDate)"
+    bool isEnd "current date > endDate (constraint)"
   }
 
-  TICKET_RATE {
-    int ticketId PK,FK
-    int rateId PK,FK
-    decimal percentage
-  }
-
-  TRANSACTION {
-    int id PK "Auto inc"
-    uuid userId FK
+  transaction {
+    uuid userId FK "Index"
     money amount
-    enum type "('deposit' || 'withdraw' || 'interest_payment')"
+    enum type "('deposit', 'withdraw', 'interest_payment')"
     timestamp createdAt "Default now"
   }
 
-  NOTIFICATION {
-    int id PK "Auto inc"
-    uuid userId FK
+  notification {
+    uuid userId FK "Index"
     string title
     string content
     timestamp createdAt "Default now"
   }
 
-  USER }o--|| TICKET : has
-  USER }o--|| TRANSACTION : has
-  USER }o--|| NOTIFICATION : has
-  TICKET ||--}o METHOD : has
-  TICKET ||--|| TICKET_RATE : has
-  TICKET_RATE ||--}o RATE : has
+  user }o--|| ticket : has
+  user }o--|| transaction : has
+  user }o--|| notification : has
+  ticket ||--}o method : has
+  ticket ||--}o rate : has
+  ticket }|--|| ticket_detail : has
 ```
 
 ### Architect

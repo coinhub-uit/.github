@@ -16,7 +16,7 @@
 erDiagram
   user {
     uuid id PK
-    string userName
+    string userName UK "For sending money"
     string email "For OTP"
     string masterPassword "Hashed"
     string pin "Hashed"
@@ -70,6 +70,11 @@ erDiagram
     string title
     string content
     timestamp createdAt "Default now"
+  }
+
+  admin {
+    string username PK,UK
+    string password "Hashed"
   }
 
   user }o--|| ticket : has

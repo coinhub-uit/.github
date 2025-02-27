@@ -18,7 +18,6 @@ erDiagram
     uuid id PK
     string userName UK "For sending money"
     string email "For OTP"
-    string masterPassword "Hashed"
     string pin "Hashed"
     bytea avatar "Optional, fallback oauth image"
     string address "Optional"

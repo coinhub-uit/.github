@@ -24,6 +24,11 @@ erDiagram
     string(10) phoneNumber "Optional (for contact)"
     %% For what??
     %% bool isActive
+  }
+
+  fund_source {
+    int sourceId PK
+    uuid userId FK
     money balance "Default 0, constraint >= 0"
   }
 
@@ -40,15 +45,15 @@ erDiagram
 
   ticket {
     uuid id PK
-    uuid userId FK
+    uuid sourceId FK
     int methodId FK
     int rateId FK
     money initMoney "> 0"
     timestamp issueDate
-    bool isOpen
+    bool isActive
   }
 
-  %% need change the name
+  %% need to change the name
   ticket_detail {
     uuid ticketId FK
     decimal percentage
@@ -76,9 +81,10 @@ erDiagram
     string password "Hashed"
   }
 
-  user }o--|| ticket : has
   user }o--|| transaction : has
   user }o--|| notification : has
+  user }|--|| fund_source : has
+  fund_source }o--|| ticket : has
   ticket ||--}o method : has
   ticket ||--}o rate : has
   ticket }|--|| ticket_detail : has

@@ -15,61 +15,80 @@
 ```mermaid
 erDiagram
   user {
-    uuid id PK
-    string userName UK "For sending money"
+    uuid userId PK
+    string userName  "[UNIQUE] For sending money"
+    string fullName
+    string birthDay
     string email "For OTP"
     string pin "Hashed"
     bytea avatar "Optional, fallback oauth image"
     string address "Optional"
-    string(10) phoneNumber "Optional (for contact)"
-    %% For what??
-    %% bool isActive
+    string phoneNumber "(10) Optional (for contact)"
   }
 
   fund_source {
-    int sourceId PK
+    int sourceId PK "Auto inc"
     uuid userId FK
     money balance "Default 0, constraint >= 0"
   }
 
   method {
-    int id PK "Auto inc"
+    int methodId PK "Auto inc"
+    string name
     string description
   }
 
-  %% name??
-  rate {
-    int id PK "Auto inc"
-    int days
+
+  interest {
+    int interestId PK "Auto inc"
+    decimal rate
   }
 
   ticket {
-    uuid id PK
-    uuid sourceId FK
+    uuid ticketId PK
+    int sourceId FK
     int methodId FK
-    int rateId FK
     money initMoney "> 0"
-    timestamp issueDate
+    money paidInterest ">= 0"
+    timestamp issueDate "default now"
+    timestamp maturityDate
     bool isActive
   }
 
-  %% need to change the name
-  ticket_detail {
-    uuid ticketId FK
-    decimal percentage
-    date startDate
-    date endDate
-    bool isEnd "current date > endDate (constraint)"
+  type_history{
+    uuid ticketId FK "PK too"
+    int typeId FK "PK too"
+    timestamp issueDate "type changed date => use newest"
+  }
+
+  saving_plan{
+    int typeId PK "Auto inc"
+    string name
+    string description
+    int days "= 0 if flexible savings"
+  }
+
+  interest_history{
+    int typeId FK "PK too"
+    int interestId FK "PK too"
+    timestamp issueDate "type changed date => use newest"
+  }
+
+  interest{
+    int interestId PK "Auto inc"
+    decimal rate
   }
 
   transaction {
-    uuid userId FK "Index"
+    uuid transactionId PK
+    int sourceId FK "Index"
     money amount
     enum type "('deposit', 'withdraw', 'interest_payment')"
     timestamp createdAt "Default now"
   }
 
   notification {
+    int notificationId PK
     uuid userId FK "Index"
     string title
     string content
@@ -77,17 +96,19 @@ erDiagram
   }
 
   admin {
-    string username PK,UK
+    string username PK "UNIQUE"
     string password "Hashed"
   }
 
-  user }o--|| transaction : has
+  fund_source }o--|| transaction : has
   user }o--|| notification : has
   user }|--|| fund_source : has
   fund_source }o--|| ticket : has
-  ticket ||--}o method : has
-  ticket ||--}o rate : has
-  ticket }|--|| ticket_detail : has
+  ticket ||--o{ method : has
+  ticket }|--|| type_history : has
+  type_history ||--|{ saving_plan : has
+  saving_plan }|--|| interest_history : has
+  interest_history ||--|{ interest : has
 ```
 
 ### Architect

@@ -42,18 +42,15 @@ erDiagram
     money balance "Default 0, >= 0"
   }
 
-  %% How to handle these cases in backend?
   method {
     %% Non-renewal, principal rollover, principal & interest rollover
     varchar(3) methodId "NR, PR, PIR"
   }
 
-  interest {
+  interest_history {
     serial interestId PK "Auto inc"
-    %% what PK too?
-    int planId PK,FK
-    %% why modify?
-    timestamp issueDate "type changed date => use newest"
+    int planId FK "Index"
+    timestamp issueDate
     decimal rate
   }
 
@@ -63,24 +60,26 @@ erDiagram
     int methodId FK
     %% So what if I changed and there're other ... already, will be failed
     money initMoney "> 100000"
+    %% Calculate before return to client (not in DB)?
     money paidInterest ">= 0"
+    money anticipatedInterest ">= 0"
     timestamp issueDate "Default now"
     timestamp maturityDate "Get issuseDate + days from saving_plan"
     bool isActive "Default true"
   }
 
-  type_history {
+  %% Use latest plan
+  plan_history {
     uuid ticketId PK,FK
     int planId PK,FK
-    %% TODO: Like above
-    timestamp issueDate "Type changed date => use newest"
+    timestamp issueDate
   }
 
   plan {
     serial planId PK "Auto inc"
     nvarchar name
     text description
-    int days ">= -1"
+    int days UK ">= -1"
   }
 
   transaction {
@@ -109,9 +108,10 @@ erDiagram
   user }|--|| fund_source : has
   fund_source }o--|| ticket : has
   ticket ||--o{ method : has
-  ticket }|--|| type_history : has
-  type_history ||--|{ plan : has
-  plan }|--|| interest : has
+  ticket }|--|| plan_history : has
+  plan_history ||--|{ plan : has
+  plan }o--|| interest_history : has
+  plan_history }|--}o interest_history : has
 ```
 
 ### Architect

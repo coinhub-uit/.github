@@ -51,7 +51,7 @@ erDiagram
   interest {
     serial interestId PK "Auto inc"
     %% what PK too?
-    int typeId PK,FK
+    int planId PK,FK
     %% why modify?
     timestamp issueDate "type changed date => use newest"
     decimal rate
@@ -69,15 +69,15 @@ erDiagram
     bool isActive "Default true"
   }
 
-  type_history{
+  type_history {
     uuid ticketId PK,FK
-    int typeId PK,FK
+    int planId PK,FK
     %% TODO: Like above
     timestamp issueDate "Type changed date => use newest"
   }
 
-  saving_plan{
-    serial typeId PK "Auto inc"
+  plan {
+    serial planId PK "Auto inc"
     nvarchar name
     text description
     int days ">= -1"
@@ -110,8 +110,8 @@ erDiagram
   fund_source }o--|| ticket : has
   ticket ||--o{ method : has
   ticket }|--|| type_history : has
-  type_history ||--|{ saving_plan : has
-  saving_plan }|--|| interest : has
+  type_history ||--|{ plan : has
+  plan }|--|| interest : has
 ```
 
 ### Architect

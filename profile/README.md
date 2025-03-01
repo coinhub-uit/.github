@@ -16,82 +16,83 @@
 erDiagram
   user {
     uuid userId PK
-    string userName  "[UNIQUE] For sending money"
-    string fullName
-    string birthDay
-    string email "For OTP"
-    string pin "Hashed"
+    nvarchar userName  "[UNIQUE] For sending money (?)"
+    nvarchar fullName
+    date birthDay
+    nvarchar email "For OTP"
+    nvarchar pin "Hashed"
     bytea avatar "Optional, fallback oauth image"
-    string address "Optional"
-    string phoneNumber "(10) Optional (for contact)"
+    nvarchar address "Optional"
+    varchar phoneNumber "(10) Optional (for contact)"
   }
 
   fund_source {
-    int sourceId PK "Auto inc"
-    uuid userId FK
+    serial sourceId PK "Auto inc"
+    uuid userId FK "Not null ref user(userId)"
     money balance "Default 0, constraint >= 0"
   }
 
   method {
-    int methodId PK "Auto inc"
-    string name
-    string description
+    serial methodId PK "Auto inc"
+    nvarchar name
+    text description
+  }
+
+
+  interest {
+    serial interestId PK "Auto inc"
+    decimal rate
   }
 
   ticket {
     uuid ticketId PK
-    int sourceId FK
-    int methodId FK
-    money initMoney "> 0"
+    int sourceId FK "Not null ref fund_source(sourceId)"
+    int methodId FK "Not null ref method(methodId)"
+    money initMoney "> 100000"
     money paidInterest ">= 0"
     timestamp issueDate "default now"
-    timestamp maturityDate
-    bool isActive
+    timestamp maturityDate "not null, // get issuseDate + days from saving_plan"
+    bool isActive "not null, default true"
   }
 
   type_history{
-    uuid ticketId FK "PK too"
-    int typeId FK "PK too"
+    uuid ticketId FK "Not null ref ticket(ticketId), PK too"
+    int typeId FK "Not null ref saving_plan(typeId), PK too"
     timestamp issueDate "type changed date => use newest"
   }
 
   saving_plan{
-    int typeId PK "Auto inc"
-    string name
-    string description
-    int days "= 0 if flexible savings"
+    serial typeId PK "Auto inc"
+    nvarchar name
+    text description
+    int days "not null, >= 0, (= 0 if flexible savings)"
   }
 
   interest_history{
-    int typeId FK "PK too"
-    int interestId FK "PK too"
+    int typeId FK "Not null ref saving_plan(typeId), PK too""
+    int interestId FK "Not null ref interest(interestId), PK too""
     timestamp issueDate "type changed date => use newest"
-  }
-
-  interest{
-    int interestId PK "Auto inc"
-    decimal rate
   }
 
   transaction {
     uuid transactionId PK
-    int sourceId FK "Index"
-    money amount
+    int sourceId FK "Not null ref fund_source(sourceId)"
+    money amount "not null, constraint > 0"
     enum type "('deposit', 'withdraw', 'interest_payment')"
     timestamp createdAt "Default now"
   }
 
   notification {
-    int notificationId PK
+    serial notificationId PK
     uuid userId FK "Index"
-    string title
-    string content
+    nvarchar title
+    text content
     timestamp createdAt "Default now"
   }
 
   admin {
-    string username PK "UNIQUE"
-    string password "Hashed"
+    nvarchar username PK "UNIQUE"
+    nvarchar password "Hashed"
   }
 
   fund_source }o--|| transaction : has

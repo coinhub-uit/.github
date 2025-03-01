@@ -69,8 +69,8 @@ erDiagram
   }
 
   interest_history{
-    int typeId FK "Not null ref saving_plan(typeId), PK too""
-    int interestId FK "Not null ref interest(interestId), PK too""
+    int typeId FK "Not null ref saving_plan(typeId), PK too"
+    int interestId FK "Not null ref interest(interestId), PK too"
     timestamp issueDate "type changed date => use newest"
   }
 

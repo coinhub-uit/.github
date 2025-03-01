@@ -38,12 +38,6 @@ erDiagram
     string description
   }
 
-
-  interest {
-    int interestId PK "Auto inc"
-    decimal rate
-  }
-
   ticket {
     uuid ticketId PK
     int sourceId FK

@@ -12,69 +12,81 @@
 
 ### DB
 
+> [!WARNING]
+>
+> - UUID or serial? if delete, that empty slot is skipped
+
+> [!TODO]
+>
+> - Check 0 1 n relation
+> - Check `%%`
+
 ```mermaid
 erDiagram
   user {
-    uuid userId PK
-    nvarchar userName  "[UNIQUE] For sending money (?)"
+    uuid userId PK "Bind with Supabase"
+    varchar(20) userName UK "Index"
     nvarchar fullName
+    char(12) citizenId
     date birthDay
-    nvarchar email "For OTP"
-    nvarchar pin "Hashed"
+    varchar(30) email "For OTP"
+    text pin "Hashed"
     bytea avatar "Optional, fallback oauth image"
-    nvarchar address "Optional"
-    varchar phoneNumber "(10) Optional (for contact)"
+    text address "Optional"
+    har(10) phoneNumber "Optional, (for contact)"
   }
 
   fund_source {
     serial sourceId PK "Auto inc"
-    uuid userId FK "Not null ref user(userId)"
-    money balance "Default 0, constraint >= 0"
+    uuid userId FK
+    money balance "Default 0, >= 0"
   }
 
+  %% How to handle these cases in backend?
   method {
-    serial methodId PK "Auto inc"
-    nvarchar name
-    text description
+    %% Non-renewal, principal rollover, principal & interest rollover
+    varchar(3) methodId "NR, PR, PIR"
   }
-
 
   interest {
     serial interestId PK "Auto inc"
-    int typeId FK "Not null ref saving_plan(typeId), PK too"
+    %% what PK too?
+    int typeId PK,FK
+    %% why modify?
     timestamp issueDate "type changed date => use newest"
     decimal rate
   }
 
   ticket {
     uuid ticketId PK
-    int sourceId FK "Not null ref fund_source(sourceId)"
-    int methodId FK "Not null ref method(methodId)"
+    int sourceId FK
+    int methodId FK
+    %% So what if I changed and there're other ... already, will be failed
     money initMoney "> 100000"
     money paidInterest ">= 0"
-    timestamp issueDate "default now"
-    timestamp maturityDate "not null, // get issuseDate + days from saving_plan"
-    bool isActive "not null, default true"
+    timestamp issueDate "Default now"
+    timestamp maturityDate "Get issuseDate + days from saving_plan"
+    bool isActive "Default true"
   }
 
   type_history{
-    uuid ticketId FK "Not null ref ticket(ticketId), PK too"
-    int typeId FK "Not null ref saving_plan(typeId), PK too"
-    timestamp issueDate "type changed date => use newest"
+    uuid ticketId PK,FK
+    int typeId PK,FK
+    %% TODO: Like above
+    timestamp issueDate "Type changed date => use newest"
   }
 
   saving_plan{
     serial typeId PK "Auto inc"
     nvarchar name
     text description
-    int days "not null, >= 0, (= 0 if flexible savings)"
+    int days ">= -1"
   }
-
 
   transaction {
     uuid transactionId PK
-    int sourceId FK "Not null ref fund_source(sourceId)"
-    money amount "not null, constraint > 0"
+    int sourceId FK
+    money amount "> 0"
     enum type "('deposit', 'withdraw', 'interest_payment')"
     timestamp createdAt "Default now"
   }
@@ -88,8 +100,8 @@ erDiagram
   }
 
   admin {
-    nvarchar username PK "UNIQUE"
-    nvarchar password "Hashed"
+    nvarchar username PK,UK
+    text password "Hashed"
   }
 
   fund_source }o--|| transaction : has

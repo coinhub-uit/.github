@@ -41,6 +41,8 @@ erDiagram
 
   interest {
     serial interestId PK "Auto inc"
+    int typeId FK "Not null ref saving_plan(typeId), PK too"
+    timestamp issueDate "type changed date => use newest"
     decimal rate
   }
 
@@ -68,11 +70,6 @@ erDiagram
     int days "not null, >= 0, (= 0 if flexible savings)"
   }
 
-  interest_history{
-    int typeId FK "Not null ref saving_plan(typeId), PK too"
-    int interestId FK "Not null ref interest(interestId), PK too"
-    timestamp issueDate "type changed date => use newest"
-  }
 
   transaction {
     uuid transactionId PK
@@ -102,8 +99,7 @@ erDiagram
   ticket ||--o{ method : has
   ticket }|--|| type_history : has
   type_history ||--|{ saving_plan : has
-  saving_plan }|--|| interest_history : has
-  interest_history ||--|{ interest : has
+  saving_plan }|--|| interest : has
 ```
 
 ### Architect

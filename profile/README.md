@@ -16,11 +16,6 @@
 >
 > - UUID or serial? if delete, that empty slot is skipped
 
-> [!TODO]
->
-> - Check 0 1 n relation
-> - Check `%%`
-
 ```mermaid
 erDiagram
   user {
@@ -29,28 +24,28 @@ erDiagram
     nvarchar fullName
     char(12) citizenId
     date birthDay
-    varchar(30) email "For OTP"
     text pin "Hashed"
     bytea avatar "Optional, fallback oauth image"
     text address "Optional"
-    har(10) phoneNumber "Optional, (for contact)"
+    text email "Optional"
+    char(10) phoneNumber "Optional"
   }
 
-  fund_source {
-    serial sourceId PK "Auto inc"
+  source {
+    varchar(20) sourceId PK "User choice"
     uuid userId FK
     money balance "Default 0, >= 0"
   }
 
   method {
     %% Non-renewal, principal rollover, principal & interest rollover
-    varchar(3) methodId "NR, PR, PIR"
+    varchar(3) methodId "Seed(NR, PR, PIR)"
   }
 
-  interest_history {
-    serial interestId PK "Auto inc"
-    int planId FK "Index"
-    timestamp issueDate
+  interest_rate {
+    serial interestRateId PK "Auto inc"
+    int planId FK
+    timestamp issueDate "Index"
     decimal rate
   }
 
@@ -59,34 +54,30 @@ erDiagram
     int sourceId FK
     int methodId FK
     %% So what if I changed and there're other ... already, will be failed
-    money initMoney "> 100000"
+    money initMoney "> 1.000.000"
     %% Calculate before return to client (not in DB)?
-    money paidInterest ">= 0"
-    money anticipatedInterest ">= 0"
-    timestamp issueDate "Default now"
-    timestamp maturityDate "Get issuseDate + days from saving_plan"
-    bool isActive "Default true"
+    timestamp issueDate "Default now, dynamic"
+    bool isActive "Default true, index"
   }
 
   %% Use latest plan
-  plan_history {
+  %% The name is ambiguous
+  ticket_interest_rate {
     uuid ticketId PK,FK
-    int planId PK,FK
-    timestamp issueDate
+    int interestRateId PK,FK
+    timestamp issueDate "Index"
   }
 
   plan {
     serial planId PK "Auto inc"
-    nvarchar name
-    text description
-    int days UK ">= -1"
+    int days UK ">= -1, Seed(-1, 90, 180)"
   }
 
   transaction {
     uuid transactionId PK
     int sourceId FK
     money amount "> 0"
-    enum type "('deposit', 'withdraw', 'interest_payment')"
+    enum type "deposit, withdraw, interest_payment"
     timestamp createdAt "Default now"
   }
 
@@ -103,16 +94,25 @@ erDiagram
     text password "Hashed"
   }
 
-  fund_source }o--|| transaction : has
-  user }o--|| notification : has
-  user }|--|| fund_source : has
-  fund_source }o--|| ticket : has
-  ticket ||--o{ method : has
-  ticket }|--|| plan_history : has
-  plan_history ||--|{ plan : has
-  plan }o--|| interest_history : has
-  plan_history }|--}o interest_history : has
+  source }o--|| transaction : "has"
+  user }o--|| notification : "has"
+  user }|--|| source : "has"
+  source }o--|| ticket : "has"
+  ticket ||--o{ method : "has"
+  ticket }|--|| ticket_interest_rate : "has sequential"
+  plan }o--|| interest_rate : "has history"
+  ticket_interest_rate ||--}o interest_rate : "has latest"
 ```
+
+> [!NOTE]
+>
+> - `user[phoneNumber]`, `user[email]` are optional (for contact)
+
+Backend:
+
+- Ticket:
+  - Return `paidInterest` = `initMoney` \* `interest_rate[rate]` / 100"
+  - Return `anticipatedInterest` is when instantly settle (latest `interest_rate[rate]` where `plan[days=-1]`)
 
 ### Architect
 

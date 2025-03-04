@@ -37,6 +37,10 @@ erDiagram
     money balance "Default 0, >= 0"
   }
 
+  settings {
+    money minimumInitMoney
+  }
+
   method {
     %% Non-renewal, principal rollover, principal & interest rollover
     varchar(3) methodId "Seed(NR, PR, PIR)"
@@ -45,7 +49,7 @@ erDiagram
   interest_rate {
     serial interestRateId PK "Auto inc"
     int planId FK
-    timestamp issueDate "Index"
+    timestamp definedDate
     decimal rate
   }
 
@@ -54,23 +58,26 @@ erDiagram
     int sourceId FK
     int methodId FK
     %% So what if I changed and there're other ... already, will be failed
-    money initMoney "> 1.000.000"
+    money initMoney ">= settings[minimumInitMoney] when insert"
     %% Calculate before return to client (not in DB)?
     timestamp issueDate "Default now, dynamic"
-    bool isActive "Default true, index"
+    timestamp maturityDate "= issueDate + plan[days], dynamic"
+    boolean isActive "Default true, index"
   }
 
   %% Use latest plan
   %% The name is ambiguous
   ticket_interest_rate {
     uuid ticketId PK,FK
-    int interestRateId PK,FK
-    timestamp issueDate "Index"
+    int interestRateId FK
+    timestamp issueDate PK
   }
 
   plan {
     serial planId PK "Auto inc"
     int days UK ">= -1, Seed(-1, 90, 180)"
+    boolean isDisabled
+    serial latestInterestRate FK "Nullable"
   }
 
   transaction {
